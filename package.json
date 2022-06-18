@@ -1,8 +1,8 @@
 {
     "$schema": "https://www.raycast.com/schemas/extension.json",
-    "name": "ms-todo-form",
-    "title": "ms-todo-form",
-    "description": "Desc",
+    "name": "ms-todo",
+    "title": "MS To Do Automator",
+    "description": "Create tasks for MS ToDo",
     "icon": "command-icon.png",
     "author": "skij",
     "categories": [
@@ -11,32 +11,20 @@
     "license": "MIT",
     "commands": [
         {
-            "name": "oauth",
-            "title": "OAuth My",
-            "description": "OAuth integration",
-            "mode": "view"
+            "name": "create-task",
+            "title": "Create MS Task",
+            "description": "Create new task to common list",
+            "mode": "view",
+            "icon": "command-icon.png"
         }
     ],
-    "preferences": [{
+    "preferences": [
+        {
             "name": "clientId",
             "type": "textfield",
             "required": true,
             "title": "Client Id",
             "description": "Client Id. Find it in Azure Portal your app Certificates & secrets page."
-        },
-        {
-            "name": "clientSecret",
-            "type": "password",
-            "required": true,
-            "title": "Client Secret",
-            "description": "Client Secret. Find it in Azure Portal your app Certificates & secrets page."
-        },
-        {
-            "name": "redirectUrl",
-            "type": "textfield",
-            "required": true,
-            "title": "Redirect Url",
-            "description": ""
         }
     ],
     "dependencies": {
@@ -46,10 +34,12 @@
         "@types/node-fetch": "^2.6.2",
         "axios": "^0.27.2",
         "isomorphic-fetch": "^3.0.0",
+        "lodash": "^4.17.21",
         "qs": "^6.10.5"
     },
     "devDependencies": {
         "@microsoft/microsoft-graph-types": "^2.21.0",
+        "@types/lodash": "^4.14.182",
         "@types/node": "~16.10.0",
         "@types/qs": "^6.9.7",
         "@types/react": "^17.0.28",

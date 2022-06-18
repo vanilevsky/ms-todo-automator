@@ -1,11 +1,14 @@
-import { OAuth } from "@raycast/api";
+import { getPreferenceValues, OAuth } from "@raycast/api";
 import fetch from "node-fetch";
+import { CreateTaskForm, msApiBaseUrl, TaskListItem } from "../const";
+import { URLSearchParams } from "url";
+import { assign } from "lodash";
+
+const preferences = getPreferenceValues();
 
 // Create an OAuth client ID via https://portal.azure.com/#blade/Microsoft_AAD_RegisteredApps/ApplicationsListBlade
 // There is a tutorial here https://docs.microsoft.com/en-us/azure/active-directory/develop/tutorial-v2-javascript-auth-code
-// const clientId = "f02a9afa-795c-428d-92f6-b5b4a426ced4"; // todo-automator-native
-const clientId = "383a3ddf-293a-4d99-8b8d-8acb6b004ed5"; // todo-automator
-// const clientSecret = "IBd8Q~k~68x1xWRtnABB1s~pcbQkJEhChaAiMaaz";
+const clientId = preferences.clientId;
 
 const client = new OAuth.PKCEClient({
   redirectMethod: OAuth.RedirectMethod.Web,
@@ -27,11 +30,9 @@ export async function authorize(): Promise<void> {
   }
 
   const authRequest = await client.authorizationRequest({
-    endpoint: "https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize",
     clientId: clientId,
-    scope:
-      "User.Read,Tasks.Read,Tasks.Read.Shared,Tasks.ReadWrite,Tasks.ReadWrite.Shared,offline_access",
-    
+    endpoint: "https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize",
+    scope: "User.Read,Tasks.Read,Tasks.Read.Shared,Tasks.ReadWrite,Tasks.ReadWrite.Shared,offline_access"
   });
   const { authorizationCode } = await client.authorize(authRequest);
   await client.setTokens(await fetchTokens(authRequest, authorizationCode));
@@ -40,7 +41,6 @@ export async function authorize(): Promise<void> {
 async function fetchTokens(authRequest: OAuth.AuthorizationRequest, authCode: string): Promise<OAuth.TokenResponse> {
   const params = new URLSearchParams();
   params.append("client_id", clientId);
-  // params.append("client_secret", clientSecret);
   params.append("code", authCode);
   params.append("code_verifier", authRequest.codeVerifier);
   params.append("grant_type", "authorization_code");
@@ -51,7 +51,7 @@ async function fetchTokens(authRequest: OAuth.AuthorizationRequest, authCode: st
     body: params,
     headers: { "Origin": "*" }
   });
-  
+
   if (!response.ok) {
     console.error("fetch tokens error:", await response.text());
     throw new Error(response.statusText);
@@ -62,7 +62,6 @@ async function fetchTokens(authRequest: OAuth.AuthorizationRequest, authCode: st
 async function refreshTokens(refreshToken: string): Promise<OAuth.TokenResponse> {
   const params = new URLSearchParams();
   params.append("client_id", clientId);
-  // params.append("client_secret", clientSecret);
   params.append("refresh_token", refreshToken);
   params.append("grant_type", "refresh_token");
 
@@ -82,32 +81,89 @@ async function refreshTokens(refreshToken: string): Promise<OAuth.TokenResponse>
 
 // API
 
-export async function fetchItems(): Promise<{ id: string; title: string }[]> {
+export async function fetchLists(): Promise<TaskListItem[]> {
 
-  const params = new URLSearchParams();
-  // params.append("q", "trashed = false");
-  // params.append("fields", "files(id, name, mimeType, iconLink, modifiedTime, webViewLink, webContentLink, size)");
-  // params.append("orderBy", "recency desc");
-  // params.append("pageSize", "100");
-
-  const response = await fetch("https://graph.microsoft.com/v1.0/me/planner/tasks?" + params.toString(), {
+  const response = await fetch(`${msApiBaseUrl}/me/todo/lists`, {
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${(await client.getTokens())?.accessToken}`,
-    },
+      Authorization: `Bearer ${(await client.getTokens())?.accessToken}`
+    }
   });
-
-  console.log("fetch items response:", response.body);
 
   if (!response.ok) {
     console.error("fetch items error:", await response.text());
     throw new Error(response.statusText);
   }
 
-  console.log(await response.json())
+  const json = (await response.json()) as { value: TaskListItem[] };
 
-  const json = (await response.json()) as { files: { id: string; name: string }[] };
+  return json.value.map((item) => ({
+    id: item.id,
+    displayName: item.displayName,
+    wellknownListName: item.wellknownListName,
+    isOwner: item.isOwner,
+    isShared: item.isShared,
+  }));
+}
 
-  return json.files.map((item) => ({ id: item.id, title: item.name }));
+export async function createTask(values: CreateTaskForm): Promise<void> {
 
+  const todoTaskListId = values.listId;
+
+  if (!values.title) {
+    throw new Error("Title is required");
+  }
+
+  if (!todoTaskListId) {
+    throw new Error("No list selected");
+  }
+
+  let taskBody = {
+    title: values.title,
+  }
+
+  if (values.body !== '') {
+    Object.assign(taskBody, {
+      body: {
+        content: values.body,
+        contentType: "html",
+      },
+    });
+  }
+
+  if (values.dueDateTime !== null) {
+    Object.assign(taskBody, {
+      dueDateTime: {
+        dateTime: values.dueDateTime,
+        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      }
+    });
+  }
+
+  if (values.reminderDateTime !== null) {
+    taskBody = assign(taskBody, {
+      reminderDateTime: {
+        dateTime: values.reminderDateTime,
+        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      }
+    });
+  }
+
+  const response = await fetch(`${msApiBaseUrl}/me/todo/lists/${todoTaskListId}/tasks`, {
+    method: 'POST',
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${(await client.getTokens())?.accessToken}`,
+    },
+    body: JSON.stringify(taskBody)
+  });
+
+  if (!response.ok) {
+    console.error("fetch items error:", await response.text());
+    throw new Error(response.statusText);
+  }
+
+  console.log("Task created");
+  console.log("values:", values);
+  console.log("taskBody:", taskBody);
 }
