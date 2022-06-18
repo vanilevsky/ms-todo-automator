@@ -1,0 +1,69 @@
+{
+    "$schema": "https://www.raycast.com/schemas/extension.json",
+    "name": "ms-todo-form",
+    "title": "ms-todo-form",
+    "description": "Desc",
+    "icon": "command-icon.png",
+    "author": "skij",
+    "categories": [
+        "Productivity"
+    ],
+    "license": "MIT",
+    "commands": [
+        {
+            "name": "oauth",
+            "title": "OAuth My",
+            "description": "OAuth integration",
+            "mode": "view"
+        }
+    ],
+    "preferences": [{
+            "name": "clientId",
+            "type": "textfield",
+            "required": true,
+            "title": "Client Id",
+            "description": "Client Id. Find it in Azure Portal your app Certificates & secrets page."
+        },
+        {
+            "name": "clientSecret",
+            "type": "password",
+            "required": true,
+            "title": "Client Secret",
+            "description": "Client Secret. Find it in Azure Portal your app Certificates & secrets page."
+        },
+        {
+            "name": "redirectUrl",
+            "type": "textfield",
+            "required": true,
+            "title": "Redirect Url",
+            "description": ""
+        }
+    ],
+    "dependencies": {
+        "@azure/identity": "^2.0.5",
+        "@microsoft/microsoft-graph-client": "^3.0.2",
+        "@raycast/api": "^1.36.1",
+        "@types/node-fetch": "^2.6.2",
+        "axios": "^0.27.2",
+        "isomorphic-fetch": "^3.0.0",
+        "qs": "^6.10.5"
+    },
+    "devDependencies": {
+        "@microsoft/microsoft-graph-types": "^2.21.0",
+        "@types/node": "~16.10.0",
+        "@types/qs": "^6.9.7",
+        "@types/react": "^17.0.28",
+        "@typescript-eslint/eslint-plugin": "^5.0.0",
+        "@typescript-eslint/parser": "^5.0.0",
+        "eslint": "^7.32.0",
+        "eslint-config-prettier": "^8.3.0",
+        "prettier": "^2.5.1",
+        "typescript": "^4.4.3"
+    },
+    "scripts": {
+        "build": "ray build -e dist",
+        "dev": "ray develop",
+        "fix-lint": "ray lint --fix",
+        "lint": "ray lint"
+    }
+}
