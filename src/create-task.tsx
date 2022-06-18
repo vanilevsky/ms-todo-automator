@@ -31,6 +31,14 @@ export default function Command() {
 
     async function handleSubmit(values: CreateTaskForm) {
 
+        if (!values.title) {
+            await showToast({
+                style: Toast.Style.Failure,
+                title: "Task is required",
+            });
+            return;
+        }
+
         await service.createTask(values);
         await showToast({ style: Toast.Style.Success, title: "Task created" });
 
