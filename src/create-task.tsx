@@ -54,14 +54,15 @@ export default function Command() {
                 actions={
                     <ActionPanel>
                         <Action.SubmitForm
+                            title="Create Task"
                             onSubmit={handleSubmit}
                         />
                     </ActionPanel>
                 }
             >
-                <Form.TextField id="title" title="Full Name" placeholder="Add a Task" info="Hello" autoFocus />
-                <Form.TextArea id="body" title="Full Name" placeholder="Add Note" />
-                <Form.Dropdown id="listId" title="Full Name" defaultValue={getDefaultId(lists)}>
+                <Form.TextField id="title" title="Task" placeholder="Add a Task" autoFocus />
+                <Form.TextArea id="body" title="Note" placeholder="Add Note" />
+                <Form.Dropdown id="listId" title="List" defaultValue={getDefaultId(lists)}>
                     {lists.map((list) => (
                         <Form.Dropdown.Item
                             key={list.id}
@@ -70,8 +71,8 @@ export default function Command() {
                         />
                     ))}
                 </Form.Dropdown>
-                <Form.DatePicker id="dueDateTime" title="Add Due Date" />
-                <Form.DatePicker id="reminderDateTime" title="Add Reminder Date & Time" />
+                <Form.DatePicker id="dueDateTime" title="Due Date" />
+                <Form.DatePicker id="reminderDateTime" title="Reminder" />
             </Form>
         );
     }
