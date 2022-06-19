@@ -35,6 +35,10 @@ export default function Command() {
         })();
     }, [service]);
 
+    function formReset() {
+        // ToDo - reset form here
+    }
+
     async function handleSubmit(values: CreateTaskForm) {
 
         if (!values.title) {
@@ -46,8 +50,13 @@ export default function Command() {
         }
 
         const taskStatus = service.createTask(values);
-        await showToast({ style: Toast.Style.Animated, title: "Task is in progress..." });
-        taskStatus.then(() => { showHUD("👏 Task created") });
+        const toast = await showToast({ style: Toast.Style.Animated, title: "Task is in progress..." });
+        taskStatus.then(() => {
+            toast.title = "Task is created";
+            toast.style = Toast.Style.Success;
+            showHUD("👏 Task created");
+            formReset();
+        });
     }
 
     if (!isLoading) {
