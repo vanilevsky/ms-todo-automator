@@ -1,24 +1,30 @@
-import { Toast, showToast, Form, ActionPanel, Action, Detail } from "@raycast/api";
+import { Toast, showToast, Form, ActionPanel, Action, Detail, showHUD } from "@raycast/api";
 import { useState, useEffect } from "react";
 import * as microsoft from "./oauth/microsoft";
 import { CreateTaskForm, TaskListItem } from "./const";
 
 const serviceName = "microsoft";
 
+const defaultListItem = {
+    id: "default-list-item-id",
+    displayName: "👀",
+    wellknownListName: "defaultList",
+} as TaskListItem;
+
 export default function Command() {
     const service = getService(serviceName);
     const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [lists, setLists] = useState<TaskListItem[]>([]);
+    const [lists, setLists] = useState<TaskListItem[]>([defaultListItem]);
 
     useEffect(() => {
         (async () => {
             try {
                 await service.authorize();
 
-                const fetchedLists = await service.fetchLists();
-                setLists(fetchedLists);
-
-                console.debug(fetchedLists);
+                service.fetchLists()
+                    .then((lists) => {
+                        setLists(lists.sort((l) => l.wellknownListName === "defaultList" ? -1 : 1));
+                    });
 
                 setIsLoading(false);
             } catch (error) {
@@ -39,13 +45,9 @@ export default function Command() {
             return;
         }
 
-        await service.createTask(values);
-        await showToast({ style: Toast.Style.Success, title: "Task created" });
-
-    }
-
-    function getDefaultId(lists: TaskListItem[]): string | undefined {
-        return lists.find(list => list.wellknownListName === "defaultList")?.id
+        const taskStatus = service.createTask(values);
+        await showToast({ style: Toast.Style.Animated, title: "Task is in progress..." });
+        taskStatus.then(() => { showHUD("👏 Task created") });
     }
 
     if (!isLoading) {
@@ -61,8 +63,10 @@ export default function Command() {
                 }
             >
                 <Form.TextField id="title" title="Task" placeholder="Add a Task" autoFocus />
+                <Form.DatePicker id="dueDateTime" title="Due Date" />
+                <Form.DatePicker id="reminderDateTime" title="Reminder" />
                 <Form.TextArea id="body" title="Note" placeholder="Add Note" />
-                <Form.Dropdown id="listId" title="List" defaultValue={getDefaultId(lists)}>
+                <Form.Dropdown id="listId" title="List">
                     {lists.map((list) => (
                         <Form.Dropdown.Item
                             key={list.id}
@@ -71,8 +75,6 @@ export default function Command() {
                         />
                     ))}
                 </Form.Dropdown>
-                <Form.DatePicker id="dueDateTime" title="Due Date" />
-                <Form.DatePicker id="reminderDateTime" title="Reminder" />
             </Form>
         );
     }
