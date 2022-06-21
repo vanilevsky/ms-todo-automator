@@ -23,10 +23,14 @@ const client = new OAuth.PKCEClient({
 export async function authorize(): Promise<void> {
   const tokenSet = await client.getTokens();
   if (tokenSet?.accessToken) {
-    if (tokenSet.refreshToken && tokenSet.isExpired()) {
-      await client.setTokens(await refreshTokens(tokenSet.refreshToken));
-    }
-    return;
+      if (tokenSet.refreshToken && tokenSet.isExpired()) {
+        try {
+          await client.setTokens(await refreshTokens(tokenSet.refreshToken));
+          return;
+        } catch (error) {
+          console.log("Refresh token: ", error.message);
+        }
+      }
   }
 
   const authRequest = await client.authorizationRequest({
