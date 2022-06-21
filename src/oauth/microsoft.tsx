@@ -28,9 +28,10 @@ export async function authorize(): Promise<void> {
           await client.setTokens(await refreshTokens(tokenSet.refreshToken));
           return;
         } catch (error) {
-          console.log("Refresh token: ", error.message);
+          console.log("Refresh token: ", error);
         }
       }
+      return;
   }
 
   const authRequest = await client.authorizationRequest({
