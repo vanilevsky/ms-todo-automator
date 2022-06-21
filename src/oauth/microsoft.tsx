@@ -8,6 +8,7 @@ const preferences = getPreferenceValues();
 
 // Create an OAuth client ID via https://portal.azure.com/#blade/Microsoft_AAD_RegisteredApps/ApplicationsListBlade
 // There is a tutorial here https://docs.microsoft.com/en-us/azure/active-directory/develop/tutorial-v2-javascript-auth-code
+// We need to register App with Web platform in the Azure portal and set the redirect URI to https://raycast.com/redirect
 const clientId = preferences.clientId;
 const clientSecret = preferences.clientSecret;
 
