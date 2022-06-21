@@ -9,6 +9,7 @@ const preferences = getPreferenceValues();
 // Create an OAuth client ID via https://portal.azure.com/#blade/Microsoft_AAD_RegisteredApps/ApplicationsListBlade
 // There is a tutorial here https://docs.microsoft.com/en-us/azure/active-directory/develop/tutorial-v2-javascript-auth-code
 const clientId = preferences.clientId;
+const clientSecret = preferences.clientSecret;
 
 const client = new OAuth.PKCEClient({
   redirectMethod: OAuth.RedirectMethod.Web,
@@ -28,7 +29,7 @@ export async function authorize(): Promise<void> {
           await client.setTokens(await refreshTokens(tokenSet.refreshToken));
           return;
         } catch (error) {
-          console.log("Refresh token: ", error);
+          console.log("Refresh token failed: ", error);
         }
       }
       return;
@@ -46,6 +47,7 @@ export async function authorize(): Promise<void> {
 async function fetchTokens(authRequest: OAuth.AuthorizationRequest, authCode: string): Promise<OAuth.TokenResponse> {
   const params = new URLSearchParams();
   params.append("client_id", clientId);
+  params.append("client_secret", clientSecret);
   params.append("code", authCode);
   params.append("code_verifier", authRequest.codeVerifier);
   params.append("grant_type", "authorization_code");
@@ -54,7 +56,6 @@ async function fetchTokens(authRequest: OAuth.AuthorizationRequest, authCode: st
   const response = await fetch("https://login.microsoftonline.com/consumers/oauth2/v2.0/token", {
     method: "POST",
     body: params,
-    headers: { "Origin": "*" }
   });
 
   if (!response.ok) {
@@ -67,13 +68,13 @@ async function fetchTokens(authRequest: OAuth.AuthorizationRequest, authCode: st
 async function refreshTokens(refreshToken: string): Promise<OAuth.TokenResponse> {
   const params = new URLSearchParams();
   params.append("client_id", clientId);
+  params.append("client_secret", clientSecret);
   params.append("refresh_token", refreshToken);
   params.append("grant_type", "refresh_token");
 
   const response = await fetch("https://login.microsoftonline.com/consumers/oauth2/v2.0/token", {
     method: "POST",
     body: params,
-    headers: { "Origin": "*" }
   });
   if (!response.ok) {
     console.error("refresh tokens error:", await response.text());

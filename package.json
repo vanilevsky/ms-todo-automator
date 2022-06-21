@@ -24,7 +24,14 @@
             "type": "textfield",
             "required": true,
             "title": "Client Id",
-            "description": "Client Id. Find it in Azure Portal your app Certificates & secrets page."
+            "description": "Client Id. Find it in Azure Portal your app overview page."
+        },
+        {
+            "name": "clientSecret",
+            "type": "password",
+            "required": true,
+            "title": "Client Secret",
+            "description": "Client Secret. Find it in Azure Portal your app Certificates & secrets page."
         }
     ],
     "dependencies": {
