@@ -1,5 +1,5 @@
 import { Toast, showToast, Form, ActionPanel, Action, Detail, showHUD } from "@raycast/api";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import * as microsoft from "./oauth/microsoft";
 import { CreateTaskForm, TaskListItem } from "./const";
 
@@ -12,6 +12,12 @@ const defaultListItem = {
 } as TaskListItem;
 
 export default function Command() {
+    const titleFieldRef = useRef<Form.TextField>(null);
+    const dueDateTimeFieldRef = useRef<Form.DatePicker>(null);
+    const reminderDateTimeFieldRef = useRef<Form.DatePicker>(null);
+    const bodyFieldRef = useRef<Form.TextArea>(null);
+    const listIdFieldRef = useRef<Form.Dropdown>(null);
+
     const service = getService(serviceName);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [lists, setLists] = useState<TaskListItem[]>([defaultListItem]);
@@ -36,7 +42,11 @@ export default function Command() {
     }, [service]);
 
     function formReset() {
-        // ToDo - reset form here
+        titleFieldRef.current?.reset();
+        dueDateTimeFieldRef.current?.reset();
+        reminderDateTimeFieldRef.current?.reset();
+        bodyFieldRef.current?.reset();
+        listIdFieldRef.current?.reset();
     }
 
     async function handleSubmit(values: CreateTaskForm) {
@@ -71,11 +81,34 @@ export default function Command() {
                     </ActionPanel>
                 }
             >
-                <Form.TextField id="title" title="Task" placeholder="Add a Task" autoFocus />
-                <Form.DatePicker id="dueDateTime" title="Due Date" />
-                <Form.DatePicker id="reminderDateTime" title="Reminder" />
-                <Form.TextArea id="body" title="Note" placeholder="Add Note" />
-                <Form.Dropdown id="listId" title="List">
+                <Form.TextField
+                    id="title"
+                    title="Task"
+                    placeholder="Add a Task"
+                    ref={titleFieldRef}
+                    autoFocus
+                />
+                <Form.DatePicker
+                    id="dueDateTime"
+                    title="Due Date"
+                    ref={dueDateTimeFieldRef}
+                />
+                <Form.DatePicker
+                    id="reminderDateTime"
+                    title="Reminder"
+                    ref={reminderDateTimeFieldRef}
+                />
+                <Form.TextArea
+                    id="body"
+                    title="Note"
+                    placeholder="Add Note"
+                    ref={bodyFieldRef}
+                />
+                <Form.Dropdown
+                    id="listId"
+                    title="List"
+                    ref={listIdFieldRef}
+                >
                     {lists.map((list) => (
                         <Form.Dropdown.Item
                             key={list.id}
